@@ -114,36 +114,57 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-            <div className="bg-white p-6 rounded shadow w-96 text-center">
-                <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
+            <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-3xl text-center">
+                <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
                 {userEmail && (
                     <>
-                        <p className="mb-2">
+                        <p className="mb-6 text-lg">
                             Bem-vindo, <strong>{userEmail}</strong> 👋
                         </p>
 
                         {userApiData ? (
-                            <div className="bg-gray-50 border rounded p-3 text-left mt-4">
+                            <div className="bg-gray-50 border rounded-lg p-4 text-left mb-8">
                                 <p><strong>ID:</strong> {userApiData.id}</p>
                                 <p><strong>Email:</strong> {userApiData.email}</p>
                                 <p><strong>Role:</strong> {userApiData.role ?? "authenticated"}</p>
-                                <p className="mt-2 text-xs break-all"><strong>Token:</strong> {userApiData.access_token}</p>
                             </div>
                         ) : (
-                            <p className="text-gray-600 mt-4">Carregando dados do servidor...</p>
+                            <p className="text-gray-600 mb-8">Carregando dados do servidor...</p>
                         )}
+
+                        {/* Cards centralizados */}
+                        <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+                            {/* Card ENEM */}
+                            <button
+                                onClick={() => router.push("/dashboard/enem")}
+                                className="w-64 h-40 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-md transition-transform transform hover:-translate-y-1"
+                            >
+                                <h2 className="text-2xl font-semibold mb-2">ENEM</h2>
+                                <p className="text-sm opacity-90">Estudos e simulados do ENEM</p>
+                            </button>
+
+                            {/* Card Concursos */}
+                            <button
+                                onClick={() => router.push("/dashboard/concursos")}
+                                className="w-64 h-40 bg-red-600 hover:bg-red-700 text-white rounded-2xl shadow-md transition-transform transform hover:-translate-y-1"
+                            >
+                                <h2 className="text-2xl font-semibold mb-2">Concursos</h2>
+                                <p className="text-sm opacity-90">Preparação para concursos</p>
+                            </button>
+                        </div>
                     </>
                 )}
 
                 <button
                     onClick={handleLogout}
-                    className="mt-6 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                    className="mt-10 bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-900 transition-colors"
                 >
                     Sair
                 </button>
             </div>
         </div>
     );
+
 }
