@@ -1,16 +1,13 @@
-import { createBrowserClient } from "@supabase/ssr";
+// lib/supabaseClient.ts
+import { createBrowserClient, createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-export const supabase =
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase: SupabaseClient =
     typeof window !== "undefined"
-        ? createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-                auth: {
-                    persistSession: true,
-                    autoRefreshToken: true,
-                    detectSessionInUrl: true,
-                },
-            }
-        )
-        : ({} as ReturnType<typeof createBrowserClient>); // placeholder no server
+        ? createBrowserClient(supabaseUrl, supabaseKey)
+        : createServerClient(supabaseUrl, supabaseKey, {
+            cookies: {} as any, // Next.js Client Component não usa cookies, fallback tranquilo
+        });
