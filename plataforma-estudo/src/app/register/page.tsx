@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClientBrowser } from "@/lib/supabaseBrowser";
 import { useRouter } from "next/navigation";
+
+
+const supabase = createClientBrowser();
 
 export default function RegisterPage() {
     const router = useRouter();

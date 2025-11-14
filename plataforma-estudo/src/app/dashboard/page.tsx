@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClientBrowser } from "@/lib/supabaseBrowser";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 
@@ -11,6 +11,8 @@ type ApiUser = {
     role?: string;
     access_token: string;
 };
+
+const supabase = createClientBrowser();
 
 export default function DashboardPage() {
     const router = useRouter();
@@ -51,11 +53,8 @@ export default function DashboardPage() {
                 setUserEmail(user.email ?? null);
 
                 // 🔹 Chamada autenticada para FastAPI
-                const apiUser = await apiFetch<ApiUser>(
-                    "/users/me",
-                    undefined,
-                    session.access_token
-                );
+                const apiUser = await apiFetch<ApiUser>("/users/me");
+
                 if (isMounted) setUserApiData(apiUser);
             } catch (err: unknown) {
                 console.error(

@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClientBrowser } from "@/lib/supabaseBrowser";
 import { useRouter } from "next/navigation";
+
+const supabase = createClientBrowser();
+
 
 export default function LoginPage() {
     const router = useRouter();
@@ -14,7 +17,7 @@ export default function LoginPage() {
         e.preventDefault();
         setError("");
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
@@ -23,6 +26,10 @@ export default function LoginPage() {
             setError(error.message);
             return;
         }
+
+        const accessToken = data.session?.access_token;
+
+        localStorage.setItem("access_token", accessToken);
 
         router.push("/dashboard");
     };

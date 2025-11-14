@@ -1,11 +1,13 @@
+// src/middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(req: NextRequest) {
+    // Criar resposta que pode manipular cookies
     const res = NextResponse.next();
 
-    // Cria um cliente do Supabase que entende os cookies da sessão
+    // Cliente do Supabase **específico para middleware**
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -14,24 +16,33 @@ export async function middleware(req: NextRequest) {
                 get(name: string) {
                     return req.cookies.get(name)?.value;
                 },
+                set(name: string, value: string, options: any) {
+                    // Cookies precisam ser setados no response
+                    res.cookies.set(name, value, options);
+                },
+                remove(name: string, options: any) {
+                    res.cookies.set(name, "", {
+                        maxAge: 0,
+                        ...options,
+                    });
+                },
             },
         }
     );
 
-    const { data, error: authError } = await supabase.auth.getUser();
-    if (authError) {
-        console.error("Supabase middleware auth error:", authError.message);
-    }
-    const user = data?.user;
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
     const url = req.nextUrl.clone();
 
-    // 🚫 Redireciona se não estiver logado e tentar acessar /dashboard
+    // Rota protegida
     if (!user && url.pathname.startsWith("/dashboard")) {
         url.pathname = "/login";
         return NextResponse.redirect(url);
     }
 
-    // 🔁 Redireciona se já estiver logado e tentar acessar /login ou /register
+    // Se já está logado e tentar acessar login ou register → redireciona
     if (user && ["/login", "/register"].includes(url.pathname)) {
         url.pathname = "/dashboard";
         return NextResponse.redirect(url);
