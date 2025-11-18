@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import users
 from app.routers import study
+from app.routers import study_material
+from app.routers import topic
 
 app = FastAPI(title="Plataforma de Estudos - Backend")
 
@@ -24,3 +26,5 @@ async def health():
 # Rotas
 app.include_router(users.router)
 app.include_router(study.router)
+app.include_router(study_material.router)
+app.include_router(topic.router)
