@@ -1,11 +1,6 @@
--- =============================
--- EXTENSÕES
--- =============================
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- =============================
--- TABELA track
--- =============================
+
 CREATE TABLE public.track (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   code text NOT NULL UNIQUE,
@@ -15,9 +10,7 @@ CREATE TABLE public.track (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- =============================
--- app_user
--- =============================
+
 CREATE TABLE public.app_user (
   id uuid PRIMARY KEY, -- FK → auth.users
   email text NOT NULL UNIQUE,
@@ -34,9 +27,7 @@ CREATE TABLE public.app_user (
   CONSTRAINT app_user_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
 
--- =============================
--- subject
--- =============================
+
 CREATE TABLE public.subject (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   track_id uuid NOT NULL REFERENCES public.track(id),
@@ -49,9 +40,7 @@ CREATE TABLE public.subject (
   UNIQUE(track_id, slug)
 );
 
--- =============================
--- topic
--- =============================
+
 CREATE TABLE public.topic (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   subject_id uuid NOT NULL REFERENCES public.subject(id),
@@ -64,9 +53,7 @@ CREATE TABLE public.topic (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- =============================
--- study_material
--- =============================
+
 CREATE TABLE public.study_material (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   topic_id uuid NOT NULL REFERENCES public.topic(id),
@@ -81,9 +68,7 @@ CREATE TABLE public.study_material (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- =============================
--- question
--- =============================
+
 CREATE TABLE public.question (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   topic_id uuid NOT NULL REFERENCES public.topic(id),
@@ -96,9 +81,7 @@ CREATE TABLE public.question (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- =============================
--- option
--- =============================
+
 CREATE TABLE public.option (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   question_id uuid NOT NULL REFERENCES public.question(id) ON DELETE CASCADE,
@@ -108,9 +91,7 @@ CREATE TABLE public.option (
   UNIQUE(question_id, label)
 );
 
--- =============================
--- study_session
--- =============================
+
 CREATE TABLE public.study_session (
   id bigserial PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES public.app_user(id),
@@ -125,9 +106,7 @@ CREATE TABLE public.study_session (
   focus_score smallint
 );
 
--- =============================
--- question_attempt
--- =============================
+
 CREATE TABLE public.question_attempt (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.app_user(id),
@@ -140,9 +119,7 @@ CREATE TABLE public.question_attempt (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- =============================
--- user_progress
--- =============================
+
 CREATE TABLE public.user_progress (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.app_user(id),
@@ -159,9 +136,6 @@ CREATE TABLE public.user_progress (
   UNIQUE(user_id, topic_id)
 );
 
--- =============================
--- topic_prerequisite
--- =============================
 CREATE TABLE public.topic_prerequisite (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   topic_id uuid NOT NULL REFERENCES public.topic(id),
@@ -172,9 +146,6 @@ CREATE TABLE public.topic_prerequisite (
   UNIQUE(topic_id, prerequisite_id)
 );
 
--- =============================
--- achievement (badges)
--- =============================
 CREATE TABLE public.achievement (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.app_user(id),
