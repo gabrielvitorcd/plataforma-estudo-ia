@@ -5,9 +5,9 @@ from typing import Optional
 class StudyMaterialCreate(BaseModel):
     topic_id: str
     title: str
-    type: str = "teoria"
     source: str
-    content_url: str
-    summary: str
-    reading_time_min: int
-    difficulty_level: int
+    content_path: Optional[str] | None = None
+    content_url_videos: List[str] | None = None
+    summary: Optional[str]
+    reading_time_min: Optional[int] = None
+    difficulty_level: int = None
