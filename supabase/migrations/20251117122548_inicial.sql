@@ -10,6 +10,17 @@ CREATE TABLE public.track (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE public.exam(
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  track_id uuid NOT NULL REFERENCES public.track(id),
+  code text NOT NULL,
+  name text NOT NULL,
+  description text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(track_id, code)
+)
+
 
 CREATE TABLE public.app_user (
   id uuid PRIMARY KEY, -- FK → auth.users
@@ -30,14 +41,14 @@ CREATE TABLE public.app_user (
 
 CREATE TABLE public.subject (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  track_id uuid NOT NULL REFERENCES public.track(id),
+  exam_id uuid NOT NULL REFERENCES public.exam(id),
   slug text NOT NULL,
   name text NOT NULL,
   area text,
   description text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(track_id, slug)
+  UNIQUE(exam_id, slug)
 );
 
 
