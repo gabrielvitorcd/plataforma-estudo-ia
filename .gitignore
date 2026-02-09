@@ -16,3 +16,7 @@ node_modules/
 # Supabase
 supabase/.temp/
 supabase/.branches/
+
+
+.continue/
+context/
