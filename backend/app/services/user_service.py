@@ -1,6 +1,6 @@
 # app/services/user_service.py
 from fastapi import HTTPException
-from app.models.user import User
+from app.schemas.user import User
 from app.database import get_db_connection
 
 def sync_user(user_payload):

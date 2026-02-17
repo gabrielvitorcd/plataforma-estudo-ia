@@ -1,168 +1,77 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-
+-- A "Árvore" do Conteúdo
 CREATE TABLE public.track (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  code text NOT NULL UNIQUE,
+  code text NOT NULL UNIQUE, -- Ex: 'enem', 'concursos'
   name text NOT NULL,
   description text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz DEFAULT now()
 );
 
-CREATE TABLE public.exam(
+CREATE TABLE public.exam (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   track_id uuid NOT NULL REFERENCES public.track(id),
-  code text NOT NULL,
+  code text NOT NULL UNIQUE, -- Ex: 'enem-oficial', 'banca-cespe'
   name text NOT NULL,
-  description text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(track_id, code)
-)
-
-
-CREATE TABLE public.app_user (
-  id uuid PRIMARY KEY, -- FK → auth.users
-  email text NOT NULL UNIQUE,
-  name text,
-  username text UNIQUE,
-  role text NOT NULL DEFAULT 'student' CHECK (role IN ('student','admin')),
-  avatar_url text,
-  study_goal_id uuid REFERENCES public.track(id),
-  daily_study_time_min integer,
-  level text,
-  xp_total integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT app_user_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+  created_at timestamptz DEFAULT now()
 );
-
 
 CREATE TABLE public.subject (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   exam_id uuid NOT NULL REFERENCES public.exam(id),
-  slug text NOT NULL,
+  code text NOT NULL UNIQUE, -- Ex: 'enem-matematica', 'enem-redacao'
   name text NOT NULL,
-  area text,
-  description text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(exam_id, slug)
+  created_at timestamptz DEFAULT now()
 );
-
 
 CREATE TABLE public.topic (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   subject_id uuid NOT NULL REFERENCES public.subject(id),
+  code text NOT NULL UNIQUE, -- Ex: 'mat-funcoes', 'mat-logaritmo'
   name text NOT NULL,
-  order_index integer,
-  difficulty_level smallint,
-  type_common text,
-  source text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  order_index integer DEFAULT 1,
+  created_at timestamptz DEFAULT now()
 );
 
-
+-- O Conteúdo (Aulas e Testes)
 CREATE TABLE public.study_material (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   topic_id uuid NOT NULL REFERENCES public.topic(id),
   title text NOT NULL,
-  source text CHECK(source IN ('ai','pdf','scrape','official_inep','books_didactic')),
-  content_path text,
-  content_url_videos text[],
-  summary text,
-  reading_time_min integer,
-  difficulty_level smallint,
-  embedding_vector jsonb,
-  created_at timestamptz NOT NULL DEFAULT now()
+  content_path text,     
+  video_url text,        
+  pdf_url text,          
+  created_at timestamptz DEFAULT now()
 );
 
-
-CREATE TABLE public.question (
+CREATE TABLE public.quiz_question (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   topic_id uuid NOT NULL REFERENCES public.topic(id),
-  statement text NOT NULL,
-  image_url text,
-  source text,
-  explanation text,
-  difficulty_level smallint,
-  tags text[],
-  created_at timestamptz NOT NULL DEFAULT now()
+  statement text NOT NULL,        -- Enunciado
+  options text[] NOT NULL,        -- Ex: ['Azul', 'Verde', 'Amarelo']
+  correct_option_index smallint NOT NULL, -- Ex: 0 (Se 'Azul' for a correta)
+  explanation text,               -- Gabarito comentado
+  created_at timestamptz DEFAULT now()
 );
 
-
-CREATE TABLE public.option (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  question_id uuid NOT NULL REFERENCES public.question(id) ON DELETE CASCADE,
-  label text NOT NULL,
-  text text NOT NULL,
-  is_correct boolean NOT NULL,
-  UNIQUE(question_id, label)
+-- O Usuário e o Progresso
+CREATE TABLE public.app_user (
+  id uuid PRIMARY KEY REFERENCES auth.users(id), -- Link com Auth do Supabase
+  email text NOT NULL,
+  name text,
+  username text UNIQUE,
+  role text DEFAULT 'student',
+  xp_total integer DEFAULT 0,    
+  current_track_id uuid REFERENCES public.track(id), -- O que ele está estudando agora
+  created_at timestamptz DEFAULT now()
 );
-
-
-CREATE TABLE public.study_session (
-  id bigserial PRIMARY KEY,
-  user_id uuid NOT NULL REFERENCES public.app_user(id),
-  track_id uuid NOT NULL REFERENCES public.track(id),
-  subject_id uuid REFERENCES public.subject(id),
-  started_at timestamptz NOT NULL DEFAULT now(),
-  ended_at timestamptz,
-  total_time_sec integer,
-  xp_earned integer DEFAULT 0,
-  notes text,
-  device_info text,
-  focus_score smallint
-);
-
-
-CREATE TABLE public.question_attempt (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES public.app_user(id),
-  question_id uuid NOT NULL REFERENCES public.question(id),
-  study_session_id bigint REFERENCES public.study_session(id),
-  selected_option_id uuid REFERENCES public.option(id),
-  is_correct boolean NOT NULL,
-  time_spent_seconds integer,
-  explanation_requested boolean DEFAULT false,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
 
 CREATE TABLE public.user_progress (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.app_user(id),
   topic_id uuid NOT NULL REFERENCES public.topic(id),
-  mastery_score smallint NOT NULL DEFAULT 0,
-  theta real NOT NULL DEFAULT 0,
-  attempts_count integer NOT NULL DEFAULT 0,
-  average_accuracy real,
-  time_spent_total_sec integer NOT NULL DEFAULT 0,
-  last_review_date date,
-  xp_earned integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(user_id, topic_id)
-);
-
-CREATE TABLE public.topic_prerequisite (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  topic_id uuid NOT NULL REFERENCES public.topic(id),
-  prerequisite_id uuid NOT NULL REFERENCES public.topic(id),
-  relation_type text NOT NULL DEFAULT 'prerequisite',
-  notes text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(topic_id, prerequisite_id)
-);
-
-CREATE TABLE public.achievement (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES public.app_user(id),
-  code text NOT NULL UNIQUE,
-  title text NOT NULL,
-  description text,
-  icon_url text,
-  awarded_at timestamptz NOT NULL DEFAULT now()
+  is_completed boolean DEFAULT false,
+  quiz_score integer DEFAULT 0,      
+  last_accessed_at timestamptz DEFAULT now(),
+  PRIMARY KEY (user_id, topic_id)
 );
