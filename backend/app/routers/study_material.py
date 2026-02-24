@@ -1,19 +1,38 @@
+from typing import List
+from uuid import UUID
+
 from fastapi import APIRouter, Depends
-from app.schemas.study_material import StudyMaterialCreate
-from app.database import get_db_connection
-from app.services.study_material_service import create_material_service
-from app.core.constants import SOURCE_OPTIONS
 
-router = APIRouter(prefix="/study_material", tags=["Study Material"])
+from app.core.security import get_current_user
+from app.schemas.study_material import StudyMaterialResponse
+from app.services.study_material_service import StudyMaterialService
+from app.dependencies import get_supabase_client
 
-@router.post("/create")
-def create_material(payload: StudyMaterialCreate, db=Depends(get_db_connection)):
-    new_id = create_material_service(db, payload)
-    return {"material_id": new_id}
+router = APIRouter(prefix="/api/study-materials", tags=["Study Materials"])
 
-@router.get("/source-options")
-def get_source_options():
-    return [
-        {"value": key, "label": value}
-        for key,value in SOURCE_OPTIONS.items()
-    ]
+
+@router.get("/topic/{topic_code}", response_model=List[StudyMaterialResponse])
+async def get_materials_by_topic(
+    topic_code: str,
+    current_user: dict = Depends(get_current_user),
+    supabase = Depends(get_supabase_client),
+):
+
+    service = StudyMaterialService(supabase)
+    return await service.get_materials_by_topic(
+        topic_code=topic_code,
+        user_id=current_user["id"]
+    )
+
+
+@router.get("/{material_id}", response_model=StudyMaterialResponse)
+async def get_material_by_id(
+    material_id: UUID,
+    current_user: dict = Depends(get_current_user),
+    supabase = Depends(get_supabase_client),
+):
+    service = StudyMaterialService(supabase)
+    return await service.get_material_by_id(
+        material_id=material_id,
+        user_id=current_user["id"]
+    )
