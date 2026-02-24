@@ -7,9 +7,10 @@ from app.routers import study
 from app.routers import study_material
 from app.routers import topic
 
+
+
 app = FastAPI(title="Plataforma de Estudos - Backend")
 
-# CORS (libera o frontend Next.js)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -25,6 +26,5 @@ async def health():
 
 # Rotas
 app.include_router(users.router)
-app.include_router(study.router)
 app.include_router(study_material.router)
 app.include_router(topic.router)
