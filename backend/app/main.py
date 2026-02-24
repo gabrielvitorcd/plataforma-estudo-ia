@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import users
-from app.routers import study
 from app.routers import study_material
 from app.routers import topic
 
