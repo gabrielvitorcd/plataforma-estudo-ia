@@ -3,32 +3,13 @@
 import { useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-// import { apiFetch } from "@/lib/api";
 
-// type ApiUser = {
-//     id: string;
-//     email: string;
-//     role?: string;
-// };
+
 
 function DashboardContent() {
     const { user, signOut } = useAuth(); // 🎯 Hook customizado!
     const router = useRouter();
-    // const [apiData, setApiData] = useState<ApiUser | null>(null);
 
-    // useEffect(() => {
-    //     // 🔹 Busca dados adicionais da API
-    //     async function loadApiData() {
-    //         try {
-    //             const data = await apiFetch<ApiUser>("/users/me");
-    //             setApiData(data);
-    //         } catch (err) {
-    //             console.error("Erro ao buscar dados da API:", err);
-    //         }
-    //     }
-    //     loadApiData();
-    // }, []);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
@@ -39,18 +20,10 @@ function DashboardContent() {
                     Bem-vindo, <strong>{user?.email}</strong> 👋
                 </p>
 
-                {/* {apiData && (
-                    <div className="bg-gray-50 border rounded-lg p-4 text-left mb-8">
-                        <p><strong>ID:</strong> {apiData.id}</p>
-                        <p><strong>Email:</strong> {apiData.email}</p>
-                        <p><strong>Role:</strong> {apiData.role ?? "authenticated"}</p>
-                    </div>
-                )}
- */}
                 {/* Cards */}
                 <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
                     <button
-                        onClick={() => router.push("/dashboard/enem")}
+                        onClick={() => router.push("/dashboard/enem/aulas/enem-mat-operacoes")}
                         className="w-64 h-40 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-md"
                     >
                         <h2 className="text-2xl font-semibold mb-2">ENEM</h2>
@@ -65,6 +38,8 @@ function DashboardContent() {
                         <p className="text-sm opacity-90">Preparação</p>
                     </button>
                 </div>
+
+
 
                 <button
                     onClick={signOut}
