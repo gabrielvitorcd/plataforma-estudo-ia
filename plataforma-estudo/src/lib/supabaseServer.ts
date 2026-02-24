@@ -2,10 +2,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export function createClientServer() {
-    // Em alguns ambientes do Next 16 o TypeScript acha que cookies() é uma Promise,
-    // então fazemos um cast para any pra não ter erro de tipo.
-    const cookieStore = cookies() as any;
+export async function createClientServer() {
+    // In Next.js 15/16, cookies() must be awaited
+    const cookieStore = await cookies();
 
     return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,10 +15,20 @@ export function createClientServer() {
                     return cookieStore.get(name)?.value;
                 },
                 set(name: string, value: string, options?: any) {
-                    cookieStore.set(name, value, options);
+                    // Note: In Server Components, you typically can't SET 
+                    // cookies directly unless it's an Action or Route Handler.
+                    try {
+                        cookieStore.set(name, value, options);
+                    } catch (error) {
+                        // Handle server component set restrictions if necessary
+                    }
                 },
                 remove(name: string, options?: any) {
-                    cookieStore.set(name, "", { maxAge: 0, ...options });
+                    try {
+                        cookieStore.set(name, "", { maxAge: 0, ...options });
+                    } catch (error) {
+                        // Handle server component delete restrictions if necessary
+                    }
                 },
             },
         }
